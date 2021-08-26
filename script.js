@@ -12,7 +12,7 @@ class Calculator{
     }
 
     delete(){
-
+        this.currentDigit = this.currentDigit.toString().slice(0,-1); //deleting the last digit everytime
     }
 
     clickNumber(number){
@@ -23,18 +23,75 @@ class Calculator{
     }
 
     chooseOperation(operation){
+        if (this.currentDigit === ''){
+            return;
+        }
+        if(this.previousDigit != ''){
+            this.calculate(); //if previous operation already exist , then it will call calculate func
+        }
         this.operation = operation;
         this.previousDigit = this.currentDigit;
         this.currentDigit = '';
     }
 
     calculate(){
+        let calculation;
+        const previous = parseFloat(this.previousDigit);
+        const current = parseFloat(this.currentDigit);
+        if(isNaN(previous) || isNaN(current)){
+            return;
+        }
+        switch (this.operation) { //working on all 4 mathmetical opeations
+            case '+':
+                calculation = previous + current;
+                break;
+                case '+':
+                    calculation = previous + current;
+                    break;
+                case '-':
+                    calculation = previous - current;
+                    break;
+                case '*':
+                    calculation = previous * current;
+                    break;
+                case '÷':
+                    calculation = previous / current;
+                    break;
+                default:
+                    return;
+        }
+        this.currentDigit = calculation;
+        this.operation = undefined;
+        this.previousDigit = '';
+    }
 
+    getDisplayNumber(number){ //shows comma  in large number and fix decimal values
+        const stringNumber = number.toString();
+        const integerDigits = parseFloat(stringNumber.split('.')[0]);
+        const decimalDigits = stringNumber.split('.')[1];
+        let intergerDisplay;
+        if (isNaN(integerDigits)){
+            intergerDisplay = '';
+        }else{
+            intergerDisplay = integerDigits.toLocaleString('en',{maximumFractionDigits: 0});
+        }
+
+        if (decimalDigits !=null){
+            return `${intergerDisplay}.${decimalDigits}`;
+        } else{
+            return intergerDisplay;
+        }
     }
 
     updateDisplay(){
-        this.currentDigitTextElement.innerText = this.currentDigit;
-        this.previousDigitTextElement.innerText = this.previousDigit;
+        this.currentDigitTextElement.innerText = this.getDisplayNumber(this.currentDigit);
+        if(this.operation != null){
+            this.previousDigitTextElement.innerText = 
+            `${this.getDisplayNumber(this.previousDigit)} ${this.operation}` //to show operation sign beside curret digits
+        }else{
+            this.previousDigitTextElement.innerText = '';
+        }
+        
     }
 
 }
@@ -49,16 +106,31 @@ const currentDigitTextElement = document.querySelector('[data-current-digits]');
 
 const calculator  = new Calculator(previousDigitTextElement, currentDigitTextElement);
 
-numberButtons.forEach(button =>{
-    button.addEventListener('click', ()=>{
+numberButtons.forEach(button => {
+    button.addEventListener('click', () => {
         calculator.clickNumber(button.innerText);
         calculator.updateDisplay();
     })
-});
+})
 
-operationButtons.forEach(button =>{
-    button.addEventListener('click', ()=>{
+operationButtons.forEach(button => {
+    button.addEventListener('click', () => {
         calculator.chooseOperation(button.innerText);
         calculator.updateDisplay();
     })
+})
+
+equalsButton.addEventListener('click', button => {
+    calculator.calculate();
+    calculator.updateDisplay();
+})
+
+allClearButton.addEventListener('click', button => {
+    calculator.clear();
+    calculator.updateDisplay();
+})
+
+deleteButton.addEventListener('click', button => {
+    calculator.delete();
+    calculator.updateDisplay();
 })
